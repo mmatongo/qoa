@@ -17,9 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Set up Ruby 3.2.x
-      uses: actions/setup-ruby@v1
+      uses: ruby/setup-ruby@v1.148.0
       with:
-        ruby-version: 3.1.2
+        ruby-version: '3.1'
 
     - name: Publish to GPR
       run: |
