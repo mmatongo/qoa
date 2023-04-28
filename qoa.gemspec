@@ -14,8 +14,6 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*", "LICENSE", "README.md"]
   s.require_paths = ["lib"]
 
-  s.add_dependency "nmatrix", "~> 0.2"
-
   s.add_development_dependency "bundler", "~> 2.0"
   s.add_development_dependency "rake", "~> 13.0"
   s.add_development_dependency "rspec", "~> 3.0"
