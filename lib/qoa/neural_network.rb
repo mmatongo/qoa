@@ -4,14 +4,15 @@ require_relative 'matrix_helpers'
 module Qoa
   class NeuralNetwork
     include MatrixHelpers
-    attr_reader :input_nodes, :hidden_nodes, :output_nodes, :learning_rate, :activation_func
+    attr_reader :input_nodes, :hidden_nodes, :output_nodes, :learning_rate, :activation_func, :dropout_rate
 
-    def initialize(input_nodes, hidden_nodes, output_nodes, learning_rate, activation_func = :sigmoid)
+    def initialize(input_nodes, hidden_nodes, output_nodes, learning_rate, dropout_rate, activation_func = :sigmoid)
       @input_nodes = input_nodes
       @hidden_nodes = hidden_nodes
       @output_nodes = output_nodes
       @learning_rate = learning_rate
       @activation_func = activation_func
+      @dropout_rate = dropout_rate
 
       @weights_ih = random_matrix(hidden_nodes, input_nodes)
       @weights_ho = random_matrix(output_nodes, hidden_nodes)
@@ -34,6 +35,9 @@ module Qoa
 
       hidden_inputs = matrix_multiply(@weights_ih, inputs)
       hidden_outputs = apply_function(hidden_inputs, ActivationFunctions.method(@activation_func))
+
+      # Apply dropout to hidden_outputs
+      hidden_outputs = apply_dropout(hidden_outputs, @dropout_rate)
 
       final_inputs = matrix_multiply(@weights_ho, hidden_outputs)
       final_outputs = apply_function(final_inputs, ActivationFunctions.method(@activation_func))
@@ -73,6 +77,9 @@ module Qoa
 
       hidden_inputs = matrix_multiply(@weights_ih, inputs)
       hidden_outputs = apply_function(hidden_inputs, ActivationFunctions.method(@activation_func))
+
+      # Apply dropout to hidden_outputs
+      hidden_outputs = apply_dropout(hidden_outputs, @dropout_rate)
 
       final_inputs = matrix_multiply(@weights_ho, hidden_outputs)
       final_outputs = apply_function(final_inputs, ActivationFunctions.method(@activation_func))
