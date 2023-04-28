@@ -5,7 +5,7 @@ module Qoa
         1.0 / (1.0 + Math.exp(-x))
       end
 
-      def self.sigmoid_derivative(x)
+      def sigmoid_derivative(x)
         x * (1.0 - x)
       end
 
