@@ -5,7 +5,9 @@ RSpec.describe Qoa::NeuralNetwork do
   let(:hidden_nodes) { 4 }
   let(:output_nodes) { 2 }
   let(:learning_rate) { 0.1 }
-  let(:neural_network) { Qoa::NeuralNetwork.new(input_nodes, hidden_nodes, output_nodes, learning_rate) }
+  let(:dropout_rate) { 0.1 }
+  let(:activation_func) { :sigmoid }
+  let(:neural_network) { Qoa::NeuralNetwork.new(input_nodes, hidden_nodes, output_nodes, learning_rate, dropout_rate, activation_func) }
 
   describe '#initialize' do
     it 'creates a neural network with the specified parameters' do
