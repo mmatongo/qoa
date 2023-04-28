@@ -36,4 +36,47 @@ RSpec.describe Qoa::NeuralNetwork do
       expect(result.size).to eq(output_nodes)
     end
   end
+
+  describe 'network output changes after training' do
+    let(:inputs) { [0.5, 0.6, 0.7] }
+    let(:targets) { [0.25, 0.75] }
+
+    it 'changes output after training' do
+      initial_output = neural_network.query(inputs)
+      neural_network.train(inputs, targets)
+      new_output = neural_network.query(inputs)
+
+      expect(new_output).not_to eq(initial_output)
+    end
+  end
+
+  describe 'activation function application' do
+    it 'applies the correct activation function' do
+      inputs = [0.5, 0.6, 0.7]
+      hidden_inputs = neural_network.send(:matrix_multiply, neural_network.instance_variable_get(:@weights_ih), inputs.map { |x| [x] })
+      hidden_outputs = neural_network.send(:apply_function, hidden_inputs, Qoa::ActivationFunctions.method(activation_func))
+
+      expect(hidden_outputs).to be_an(Array)
+      expect(hidden_outputs.size).to eq(hidden_nodes)
+    end
+  end
+
+  describe 'weight matrices dimensions' do
+    it 'has correct dimensions for the input-hidden weight matrix' do
+      expect(neural_network.instance_variable_get(:@weights_ih).size).to eq(hidden_nodes)
+      expect(neural_network.instance_variable_get(:@weights_ih).first.size).to eq(input_nodes)
+    end
+
+    it 'has correct dimensions for the hidden-output weight matrix' do
+      expect(neural_network.instance_variable_get(:@weights_ho).size).to eq(output_nodes)
+      expect(neural_network.instance_variable_get(:@weights_ho).first.size).to eq(hidden_nodes)
+    end
+  end
+
+  describe '#initialize' do
+    it 'initializes with correct default values' do
+      expect(neural_network.dropout_rate).to eq(dropout_rate)
+      expect(neural_network.activation_func).to eq(activation_func)
+    end
+  end
 end
