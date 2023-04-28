@@ -69,5 +69,9 @@ module Qoa
         b + gradients[i].inject(0.0) { |sum, d| sum + d }
       end
     end
+
+    def apply_dropout(matrix, dropout_rate)
+      matrix.map { |row| row.map { |x| rand < dropout_rate ? 0 : x } }
+    end
   end
 end
