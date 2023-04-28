@@ -4,15 +4,17 @@ require_relative 'matrix_helpers'
 module Qoa
   class NeuralNetwork
     include MatrixHelpers
-    attr_reader :input_nodes, :hidden_nodes, :output_nodes, :learning_rate, :activation_func, :dropout_rate
+    attr_reader :input_nodes, :hidden_nodes, :output_nodes, :learning_rate, :activation_func, :dropout_rate, :decay_rate, :epsilon
 
-    def initialize(input_nodes, hidden_nodes, output_nodes, learning_rate, dropout_rate, activation_func = :sigmoid)
+    def initialize(input_nodes, hidden_nodes, output_nodes, learning_rate, dropout_rate, activation_func = :sigmoid, decay_rate = 0.9, epsilon = 1e-8)
       @input_nodes = input_nodes
       @hidden_nodes = hidden_nodes
       @output_nodes = output_nodes
       @learning_rate = learning_rate
       @activation_func = activation_func
       @dropout_rate = dropout_rate
+      @decay_rate = decay_rate
+      @epsilon = epsilon
 
       @weights_ih = random_matrix(hidden_nodes, input_nodes)
       @weights_ho = random_matrix(output_nodes, hidden_nodes)
@@ -22,6 +24,10 @@ module Qoa
       @beta_ih = Array.new(hidden_nodes) { 0.0 }
       @gamma_ho = Array.new(output_nodes) { 1.0 }
       @beta_ho = Array.new(output_nodes) { 0.0 }
+
+      # Initialize cache for RMSprop
+      @cache_ih = Array.new(hidden_nodes) { Array.new(input_nodes, 0) }
+      @cache_ho = Array.new(output_nodes) { Array.new(hidden_nodes, 0) }
     end
 
     def random_matrix(rows, cols)
@@ -60,10 +66,14 @@ module Qoa
       hidden_errors = matrix_multiply(transpose(@weights_ho), output_errors)
 
       gradients_ho = matrix_multiply_element_wise(output_errors, apply_function(final_outputs, ActivationFunctions.method(derivative_func)))
-      @weights_ho = matrix_add(@weights_ho, scalar_multiply(@learning_rate, matrix_multiply(gradients_ho, transpose(hidden_outputs))))
-
       gradients_ih = matrix_multiply_element_wise(hidden_errors, apply_function(hidden_outputs, ActivationFunctions.method(derivative_func)))
-      @weights_ih = matrix_add(@weights_ih, scalar_multiply(@learning_rate, matrix_multiply(gradients_ih, transpose(inputs))))
+
+      # Update weights using RMSprop
+      @cache_ih = matrix_add(scalar_multiply(@decay_rate, @cache_ih), scalar_multiply(1 - @decay_rate, matrix_pow(gradients_ih, 2)))
+      @weights_ih = matrix_add(@weights_ih, scalar_multiply(@learning_rate, matrix_multiply_element_wise(matrix_pow(scalar_add(@cache_ih, @epsilon), -0.5), gradients_ih)))
+
+      @cache_ho = matrix_add(scalar_multiply(@decay_rate, @cache_ho), scalar_multiply(1 - @decay_rate, matrix_pow(gradients_ho, 2)))
+      @weights_ho = matrix_add(@weights_ho, scalar_multiply(@learning_rate, matrix_multiply_element_wise(matrix_pow(scalar_add(@cache_ho, @epsilon), -0.5), gradients_ho)))
 
       # Update gamma and beta for hidden and output layers
       @gamma_ih = update_gamma(@gamma_ih, hidden_normalized, gradients_ih)
