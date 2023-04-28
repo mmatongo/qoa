@@ -5,7 +5,7 @@ module Qoa
       a_cols = a[0].size
       b_rows = b.size
       b_cols = b[0].size
-      raise ArgumentError, "incompatible dimensions" if a_cols != b_rows
+      raise ArgumentError, 'incompatible dimensions' if a_cols != b_rows
 
       result = Array.new(a_rows) { Array.new(b_cols, 0) }
       a_rows.times do |i|
@@ -40,6 +40,34 @@ module Qoa
 
     def scalar_multiply(scalar, matrix)
       matrix.map { |row| row.map { |x| x * scalar } }
+    end
+
+    def mean(matrix)
+      matrix.map { |row| row.inject(0.0) { |sum, x| sum + x } / row.size }
+    end
+
+    def variance(matrix, mean)
+      matrix.map.with_index { |row, i| row.inject(0.0) { |sum, x| sum + (x - mean[i]) ** 2 } / row.size }
+    end
+
+    def normalize(matrix, mean, variance)
+      matrix.map.with_index { |row, i| row.map { |x| (x - mean[i]) / Math.sqrt(variance[i] + 1e-8) } }
+    end
+
+    def scale_and_shift(matrix, gamma, beta)
+      matrix.map.with_index { |row, i| row.map { |x| gamma[i] * x + beta[i] } }
+    end
+
+    def update_gamma(gamma, normalized, gradients)
+      gamma.each_with_index.map do |g, i|
+        g + normalized[i].zip(gradients[i]).inject(0.0) { |sum, (n, d)| sum + n * d }
+      end
+    end
+
+    def update_beta(beta, gradients)
+      beta.each_with_index.map do |b, i|
+        b + gradients[i].inject(0.0) { |sum, d| sum + d }
+      end
     end
   end
 end
