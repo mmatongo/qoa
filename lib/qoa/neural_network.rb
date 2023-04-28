@@ -1,8 +1,9 @@
-require 'nmatrix/nmatrix'
 require_relative 'activation_functions'
+require_relative 'matrix_helpers'
 
 module Qoa
   class NeuralNetwork
+    include MatrixHelpers
     attr_reader :input_nodes, :hidden_nodes, :output_nodes, :learning_rate
 
     def initialize(input_nodes, hidden_nodes, output_nodes, learning_rate)
@@ -16,36 +17,39 @@ module Qoa
     end
 
     def random_matrix(rows, cols)
-      NMatrix.new([rows, cols], Array.new(rows * cols) { rand * 2 - 1 }, dtype: :float64)
+      Array.new(rows) { Array.new(cols) { rand * 2 - 1 } }
     end
 
     def train(inputs, targets)
-      inputs = NMatrix.new([inputs.size, 1], inputs)
-      targets = NMatrix.new([targets.size, 1], targets)
+      inputs = inputs.map { |x| [x] } # Convert to column vector
+      targets = targets.map { |x| [x] } # Convert to column vector
 
-      hidden_inputs = @weights_ih.transpose.dot(inputs)
-      hidden_outputs = NMatrix.new([hidden_inputs.shape[0], 1], hidden_inputs.map { |x| ActivationFunctions.sigmoid(x) }.to_a.flatten, dtype: :float64)
+      hidden_inputs = matrix_multiply(@weights_ih, inputs)
+      hidden_outputs = apply_function(hidden_inputs, ActivationFunctions.method(:sigmoid))
 
-      final_inputs = @weights_ho.transpose.dot(hidden_outputs)
-      final_outputs = NMatrix.new([final_inputs.shape[0], 1], final_inputs.map { |x| ActivationFunctions.sigmoid(x) }.to_a.flatten, dtype: :float64)
+      final_inputs = matrix_multiply(@weights_ho, hidden_outputs)
+      final_outputs = apply_function(final_inputs, ActivationFunctions.method(:sigmoid))
 
-      output_errors = targets - final_outputs
-      hidden_errors = @weights_ho.dot(output_errors)
+      output_errors = matrix_subtract(targets, final_outputs)
+      hidden_errors = matrix_multiply(transpose(@weights_ho), output_errors)
 
-      @weights_ho += @learning_rate * (output_errors * final_outputs * (1.0 - final_outputs)).dot(hidden_outputs.transpose)
-      @weights_ih += @learning_rate * (hidden_errors * hidden_outputs * (1.0 - hidden_outputs)).dot(inputs.transpose)
+      gradients_ho = matrix_multiply_element_wise(output_errors, apply_function(final_outputs, ActivationFunctions.method(:sigmoid_derivative)))
+      @weights_ho = matrix_add(@weights_ho, scalar_multiply(@learning_rate, matrix_multiply(gradients_ho, transpose(hidden_outputs))))
+
+      gradients_ih = matrix_multiply_element_wise(hidden_errors, apply_function(hidden_outputs, ActivationFunctions.method(:sigmoid_derivative)))
+      @weights_ih = matrix_add(@weights_ih, scalar_multiply(@learning_rate, matrix_multiply(gradients_ih, transpose(inputs))))
     end
 
     def query(inputs)
-      inputs = NMatrix.new([inputs.size, 1], inputs)
-    
-      hidden_inputs = @weights_ih.transpose.dot(inputs)
-      hidden_outputs = NMatrix.new([hidden_inputs.shape[0], 1], hidden_inputs.map { |x| ActivationFunctions.sigmoid(x) }.to_a.flatten, dtype: :float64)
+      inputs = inputs.map { |x| [x] } # Convert to column vector
 
-      final_inputs = @weights_ho.transpose.dot(hidden_outputs)
-      final_outputs = final_inputs.map { |x| ActivationFunctions.sigmoid(x) }
-    
-      final_outputs.to_a.flatten
+      hidden_inputs = matrix_multiply(@weights_ih, inputs)
+      hidden_outputs = apply_function(hidden_inputs, ActivationFunctions.method(:sigmoid))
+
+      final_inputs = matrix_multiply(@weights_ho, hidden_outputs)
+      final_outputs = apply_function(final_inputs, ActivationFunctions.method(:sigmoid))
+
+      final_outputs.flatten
     end
   end
 end
