@@ -6,7 +6,8 @@ RSpec.describe Qoa::NeuralNetwork do
   let(:output_nodes) { 1 }
   let(:learning_rate) { 0.1 }
   let(:activation_func) { :sigmoid }
-  let(:nn) { Qoa::NeuralNetwork.new(input_nodes, hidden_nodes, output_nodes, learning_rate, activation_func) }
+  let(:dropout_rate) { 0.1 }
+  let(:nn) { Qoa::NeuralNetwork.new(input_nodes, hidden_nodes, output_nodes, learning_rate, dropout_rate, activation_func) }
 
   context 'XOR problem' do
     it 'learns the XOR function' do
