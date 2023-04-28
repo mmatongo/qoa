@@ -11,7 +11,12 @@ module Qoa
       a_rows.times do |i|
         b_cols.times do |j|
           a_cols.times do |k|
-            result[i][j] += a[i][k] * b[k][j]
+            # Check for nil values before performing multiplication
+            if a[i][k].nil? || b[k][j].nil?
+              result[i][j] += 0
+            else
+              result[i][j] += a[i][k] * b[k][j]
+            end
           end
         end
       end
@@ -31,15 +36,27 @@ module Qoa
     end
 
     def matrix_multiply_element_wise(a, b)
-      a.zip(b).map { |r1, r2| r1.zip(r2).map { |x, y| x * y } }
+      a.zip(b).map do |r1, r2|
+        r1.zip(r2).map do |x, y|
+          x.nil? || y.nil? ? nil : x * y
+        end
+      end
     end
 
     def matrix_add(a, b)
-      a.zip(b).map { |r1, r2| r1.zip(r2).map { |x, y| x + y } }
+      a.zip(b).map do |r1, r2|
+        r1.zip(r2).map do |x, y|
+          x.nil? || y.nil? ? nil : x + y
+        end
+      end
     end
 
     def scalar_multiply(scalar, matrix)
-      matrix.map { |row| row.map { |x| x * scalar } }
+      matrix.map do |row|
+        row.map do |x|
+          x.nil? ? nil : x * scalar
+        end
+      end
     end
 
     def mean(matrix)
@@ -72,6 +89,14 @@ module Qoa
 
     def apply_dropout(matrix, dropout_rate)
       matrix.map { |row| row.map { |x| rand < dropout_rate ? 0 : x } }
+    end
+
+    def matrix_pow(matrix, power)
+      matrix.map { |row| row.map { |x| x.nil? ? nil : x ** power } }
+    end
+
+    def scalar_add(matrix, scalar)
+      matrix.map { |row| row.map { |x| x.nil? ? nil : x + scalar } }
     end
   end
 end
