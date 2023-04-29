@@ -48,6 +48,16 @@ module Qoa
       def swish_derivative(x, beta = 1.0)
         swish(x, beta) + sigmoid(beta * x) * (1 - swish(x, beta))
       end
+
+      def softmax(x)
+        exps = x.map { |e| Math.exp(e - x.max) }
+        sum = exps.inject(:+)
+        exps.map { |e| e / sum }
+      end
+
+      def softmax_derivative(x)
+        x.map { |e| e * (1 - e) }
+      end
     end
   end
 end
