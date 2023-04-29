@@ -12,7 +12,7 @@ module Qoa
         b_cols.times do |j|
           a_cols.times do |k|
             # Check for nil values before performing multiplication
-            if a[i][k].nil? || b[k][j].nil?
+            if a[i].nil? || b[k].nil? || a[i][k].nil? || b[k][j].nil?
               result[i][j] += 0
             else
               result[i][j] += a[i][k] * b[k][j]
@@ -37,25 +37,31 @@ module Qoa
 
     def matrix_multiply_element_wise(a, b)
       a.zip(b).map do |r1, r2|
-        r1.zip(r2).map do |x, y|
-          x.nil? || y.nil? ? nil : x * y
+        if r1.nil? || r2.nil?
+          nil
+        else
+          r1.zip(r2).map do |x, y|
+            x.nil? || y.nil? ? nil : x * y
+          end
         end
       end
     end
 
     def matrix_add(a, b)
       a.zip(b).map do |r1, r2|
-        r1.zip(r2).map do |x, y|
-          x.nil? || y.nil? ? nil : x + y
+        if r1.nil? || r2.nil?
+          nil
+        else
+          r1.zip(r2).map do |x, y|
+            (x.nil? || y.nil?) ? nil : x + y
+          end
         end
       end
     end
 
     def scalar_multiply(scalar, matrix)
       matrix.map do |row|
-        row.map do |x|
-          x.nil? ? nil : x * scalar
-        end
+        row.nil? ? nil : row.map { |x| x.nil? ? nil : x * scalar }
       end
     end
 
@@ -83,7 +89,7 @@ module Qoa
 
     def update_beta(beta, gradients)
       beta.each_with_index.map do |b, i|
-        b + gradients[i].inject(0.0) { |sum, d| sum + d }
+        b + gradients[i].inject(0.0) { |sum, d| sum + (d.nil? ? 0 : d) }
       end
     end
 
