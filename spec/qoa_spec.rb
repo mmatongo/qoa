@@ -53,7 +53,7 @@ RSpec.describe Qoa::NeuralNetwork do
   describe 'activation function application' do
     it 'applies the correct activation function' do
       inputs = [0.5, 0.6, 0.7]
-      weights = neural_network.instance_variable_get(:@weights)
+      weights = neural_network.instance_variable_get(:@layers).map(&:weights)
       layer_outputs = [inputs.map { |x| [x] }]
 
       weights.each do |w|
@@ -71,7 +71,7 @@ RSpec.describe Qoa::NeuralNetwork do
 
   describe 'weight matrices dimensions' do
     it 'has correct dimensions for the weight matrices' do
-      weights = neural_network.instance_variable_get(:@weights)
+      weights = neural_network.instance_variable_get(:@layers).map(&:weights)
 
       expect(weights.first.size).to eq(hidden_layers.first)
       expect(weights.first.first.size).to eq(input_nodes)

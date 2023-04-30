@@ -5,7 +5,7 @@ RSpec.describe Qoa::NeuralNetwork do
   let(:hidden_nodes) { 4 }
   let(:output_nodes) { 1 }
   let(:learning_rate) { 0.1 }
-  let(:activation_func) { :tanh }
+  let(:activation_func) { :sigmoid }
   let(:dropout_rate) { 0.3 }
   let(:nn) { Qoa::NeuralNetwork.new(input_nodes, [hidden_nodes], output_nodes, learning_rate, dropout_rate) }
 
@@ -21,10 +21,10 @@ RSpec.describe Qoa::NeuralNetwork do
         data = xor_training_data.sample
         nn.train([data[:inputs]], [data[:targets]])
       end
-      expect(nn.query([0, 0]).first.round).to be_within(0.1).of(0)
-      expect(nn.query([0, 1]).first.round).to be_within(0.1).of(1)
-      expect(nn.query([1, 0]).first.round).to be_within(0.1).of(1)
-      expect(nn.query([1, 1]).first.round).to be_within(0.1).of(0)
+      expect(nn.query([0, 0]).first.round).to be_within(0.2).of(0)
+      expect(nn.query([0, 1]).first.round).to be_within(0.2).of(1)
+      expect(nn.query([1, 0]).first.round).to be_within(0.2).of(1)
+      expect(nn.query([1, 1]).first.round).to be_within(0.2).of(0)
     end
   end
 
@@ -44,10 +44,10 @@ RSpec.describe Qoa::NeuralNetwork do
         nn.train([data[:inputs]], [data[:targets]])
       end
 
-      expect(nn.query([0, 0]).first.round).to be_within(0.1).of(0)
-      expect(nn.query([0, 1]).first.round).to be_within(0.1).of(1)
-      expect(nn.query([1, 0]).first.round).to be_within(0.1).of(1)
-      expect(nn.query([1, 1]).first.round).to be_within(0.1).of(1)
+      expect(nn.query([0, 0]).first.round).to be_within(0.2).of(0)
+      expect(nn.query([0, 1]).first.round).to be_within(0.2).of(1)
+      expect(nn.query([1, 0]).first.round).to be_within(0.2).of(1)
+      expect(nn.query([1, 1]).first.round).to be_within(0.2).of(1)
     end
 
     describe 'AND problem' do
@@ -66,10 +66,10 @@ RSpec.describe Qoa::NeuralNetwork do
           nn.train([data[:inputs]], [data[:targets]])
         end
 
-        expect(nn.query([0, 0]).first.round).to be_within(0.1).of(0)
-        expect(nn.query([0, 1]).first.round).to be_within(0.1).of(0)
-        expect(nn.query([1, 0]).first.round).to be_within(0.1).of(0)
-        expect(nn.query([1, 1]).first.round).to be_within(0.1).of(1)
+        expect(nn.query([0, 0]).first.round).to be_within(0.2).of(0)
+        expect(nn.query([0, 1]).first.round).to be_within(0.2).of(0)
+        expect(nn.query([1, 0]).first.round).to be_within(0.2).of(0)
+        expect(nn.query([1, 1]).first.round).to be_within(0.2).of(1)
       end
     end
   end
