@@ -48,6 +48,31 @@ module Qoa
       end
     end
 
+    def train_with_early_stopping(inputs, targets, validation_inputs, validation_targets, max_epochs, patience)
+      best_validation_loss = Float::INFINITY
+      patience_left = patience
+      epoch = 0
+
+      while epoch < max_epochs && patience_left > 0
+        train(inputs, targets)
+        validation_loss = calculate_loss(validation_inputs, validation_targets)
+        puts "Epoch #{epoch + 1}: Validation loss = #{validation_loss}"
+
+        if validation_loss < best_validation_loss
+          best_validation_loss = validation_loss
+          save_model('best_model.json')
+          patience_left = patience
+        else
+          patience_left -= 1
+        end
+
+        epoch += 1
+      end
+
+      puts "Training stopped. Best validation loss = #{best_validation_loss}"
+      load_model('best_model.json')
+    end
+
     def forward_pass(inputs)
       inputs = inputs.map { |x| [x] } # Convert to column vector
 
