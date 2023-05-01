@@ -39,5 +39,11 @@ module Qoa
         layer.weights = model_data[:weights][i]
       end
     end
+
+    def mean_squared_error(prediction, target)
+      raise ArgumentError, 'prediction and target must have the same length' if prediction.size != target.size
+
+      prediction.zip(target).map { |p, t| (p - t) ** 2 }.sum / prediction.size
+    end
   end
 end
