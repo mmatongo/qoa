@@ -13,19 +13,9 @@ Qoa is a simple and customizable neural network library for Ruby. It allows you 
 
 ## Installation
 
-### Option 1: Copy the files
+### Install via RubyGems
 
-Simply copy the `neural_network.rb`, `activation_functions.rb`, and `matrix_helpers.rb` files into your project and require them.
-
-```ruby
-require_relative 'neural_network'
-require_relative 'activation_functions'
-require_relative 'matrix_helpers'
-```
-
-### Option 2: Install via RubyGems
-
-Alternatively, you can install the gem via RubyGems:
+You can install the gem via RubyGems:
 
 ```
 gem install qoa
@@ -56,7 +46,30 @@ To create a new neural network, you can initialize an instance of `Qoa::NeuralNe
 Example:
 
 ```ruby
-nn = Qoa::NeuralNetwork.new(784, [128, 64], 10, 0.001, 0.5, :relu, 0.9, 1e-8, 32)
+require 'qoa'
+
+input_nodes = 784 # Number of input features (e.g., 28x28 pixels for MNIST dataset)
+hidden_layers = [128, 64] # Two hidden layers with 128 and 64 nodes each
+output_nodes = 10 # Number of output classes (e.g., 10 for MNIST dataset)
+learning_rate = 0.01
+dropout_rate = 0.5
+activation_func = :relu
+
+nn = Qoa::NeuralNetwork.new(input_nodes, hidden_layers, output_nodes, learning_rate, dropout_rate, activation_func)
+```
+
+### Saving and Loading Models
+
+To save the trained model to a file, call the `save_model` method:
+
+```ruby
+nn.save_model('model.json')
+```
+
+To load a previously saved model, call the `load_model` method:
+
+```ruby
+nn.load_model('model.json')
 ```
 
 ### Training the Neural Network
