@@ -10,9 +10,9 @@ module Qoa
     include Utils
     include LossFunctions
 
-    attr_reader :input_nodes, :hidden_layers, :output_nodes, :learning_rate, :activation_func, :dropout_rate, :decay_rate, :epsilon, :batch_size
+    attr_reader :input_nodes, :hidden_layers, :output_nodes, :learning_rate, :activation_func, :dropout_rate, :decay_rate, :epsilon, :batch_size, :l1_lambda, :l2_lambda
 
-    def initialize(input_nodes, hidden_layers, output_nodes, learning_rate, dropout_rate, activation_func = :sigmoid, decay_rate = 0.9, epsilon = 1e-8, batch_size = 10)
+    def initialize(input_nodes, hidden_layers, output_nodes, learning_rate, dropout_rate, activation_func = :sigmoid, decay_rate = 0.9, epsilon = 1e-8, batch_size = 10, l1_lambda = 0.0, l2_lambda = 0.0)
       @input_nodes = input_nodes
       @hidden_layers = hidden_layers
       @output_nodes = output_nodes
@@ -22,6 +22,8 @@ module Qoa
       @decay_rate = decay_rate
       @epsilon = epsilon
       @batch_size = batch_size
+      @l1_lambda = l1_lambda
+      @l2_lambda = l2_lambda
 
       @layers = []
       @layers << Layer.new(input_nodes, hidden_layers[0])
