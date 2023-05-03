@@ -1,12 +1,14 @@
-require_relative 'matrix_helpers'
 require 'concurrent'
+require_relative 'matrix_helpers'
+require_relative 'err/validations'
 
 module Qoa
   module Training
     include MatrixHelpers
+    include Err::Validations
 
     def train(inputs, targets)
-      raise ArgumentError, 'inputs and targets must have the same length' if inputs.size != targets.size
+      validate_train_args(inputs, targets)
 
       inputs.zip(targets).each_slice(@batch_size) do |batch|
         train_batch(batch)
