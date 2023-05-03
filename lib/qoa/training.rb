@@ -44,7 +44,8 @@ module Qoa
 
       # Update weights
       @layers.each_with_index do |layer, i|
-        layer.weights = matrix_add(layer.weights, scalar_multiply(@learning_rate / batch.size, weight_deltas[i]))
+        regularization_penalty = calculate_regularization_penalty(layer.weights, @l1_lambda, @l2_lambda)
+        layer.weights = matrix_add(layer.weights, scalar_multiply(@learning_rate / batch.size, matrix_add(weight_deltas[i], regularization_penalty)))
       end
     end
 
@@ -108,6 +109,17 @@ module Qoa
       end
 
       weight_deltas
+    end
+
+    def calculate_regularization_penalty(weights, l1_lambda, l2_lambda)
+      l1_penalty = weights.map do |row|
+        row.nil? ? nil : row.map { |x| x.nil? ? nil : (x < 0 ? -1 : 1) }
+      end
+      l1_penalty = scalar_multiply(l1_lambda, l1_penalty)
+
+      l2_penalty = scalar_multiply(l2_lambda, weights)
+
+      matrix_add(l1_penalty, l2_penalty)
     end
   end
 end
