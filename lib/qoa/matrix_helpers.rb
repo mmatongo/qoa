@@ -24,7 +24,11 @@ module Qoa
     end
 
     def apply_function(matrix, func)
-      matrix.map { |row| row.map { |x| func.call(x) } }
+      matrix.map do |row|
+        row.map do |x|
+          x.nil? ? nil : func.call(x)  # Add a check for nil values
+        end
+      end
     end
 
     def transpose(matrix)

@@ -34,7 +34,7 @@ module Qoa
       @epsilon = model_data[:epsilon]
       @batch_size = model_data[:batch_size]
 
-      @layers = model_data[:weights].map { |w| Layer.new(w.first.size, w.size) }
+      @layers = model_data[:weights].map { |w| Qoa::Layers::Layer.new(w.first.size, w.size) }
       @layers.each_with_index do |layer, i|
         layer.weights = model_data[:weights][i]
       end

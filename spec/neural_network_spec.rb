@@ -2,12 +2,12 @@ require 'spec_helper'
 
 RSpec.describe Qoa::NeuralNetwork do
   let(:input_nodes) { 2 }
-  let(:hidden_nodes) { 4 }
+  let(:hidden_layers) { [[:conv, 32, 3], [:pool, 16, 2], 128, 64] }
   let(:output_nodes) { 1 }
   let(:learning_rate) { 0.1 }
   let(:activation_func) { :sigmoid }
   let(:dropout_rate) { 0.3 }
-  let(:nn) { Qoa::NeuralNetwork.new(input_nodes, [hidden_nodes], output_nodes, learning_rate, dropout_rate) }
+  let(:nn) { Qoa::NeuralNetwork.new(input_nodes, hidden_layers, output_nodes, learning_rate, dropout_rate) }
 
   context 'XOR problem' do
     it 'learns the XOR function' do

@@ -80,8 +80,15 @@ module Qoa
       inputs = inputs.map { |x| [x] } # Convert to column vector
 
       layer_outputs = [inputs]
-      @layers.map(&:weights).each_with_index do |w, i|
-        layer_inputs = matrix_multiply(w, layer_outputs[-1])
+      @layers.each_with_index do |layer, i|
+        if layer.is_a?(Qoa::Layers::ConvolutionalLayer)
+          layer_inputs = convolution(layer, layer_outputs[-1])
+        elsif layer.is_a?(Qoa::Layers::PoolingLayer)
+          layer_inputs = pooling(layer, layer_outputs[-1])
+        else
+          layer_inputs = matrix_multiply(layer.weights, layer_outputs[-1])
+        end
+
         layer_outputs << apply_function(layer_inputs, ActivationFunctions.method(@activation_func))
 
         # Apply dropout to hidden layers
@@ -104,9 +111,15 @@ module Qoa
 
       # Compute weight deltas
       weight_deltas = []
-      @layers.each_with_index do |_, i|
+      @layers.each_with_index do |layer, i|
         gradients = matrix_multiply_element_wise(errors[i], apply_function(layer_outputs[i + 1], ActivationFunctions.method(derivative_func)))
-        w_delta = matrix_multiply(gradients, transpose(layer_outputs[i]))
+        if layer.is_a?(Qoa::Layers::ConvolutionalLayer)
+          w_delta = conv_weight_delta(layer, gradients, layer_outputs[i])
+        elsif layer.is_a?(Qoa::Layers::PoolingLayer)
+          w_delta = pool_weight_delta(layer, gradients, layer_outputs[i])
+        else
+          w_delta = matrix_multiply(gradients, transpose(layer_outputs[i]))
+        end
         weight_deltas << w_delta
       end
 
@@ -122,6 +135,72 @@ module Qoa
       l2_penalty = scalar_multiply(l2_lambda, weights)
 
       matrix_add(l1_penalty, l2_penalty)
+    end
+
+    def convolution(layer, inputs)
+      output_size = layer.output_size
+      kernel_size = layer.kernel_size
+      stride = layer.stride
+
+      output = Array.new(output_size) { Array.new(inputs.length - kernel_size + 1) }
+      layer.weights.each_with_index do |row, i|
+        inputs.each_cons(kernel_size).each_with_index do |input_slice, j|
+          output[i][j] = row.zip(input_slice).map { |a, b| a * b }.reduce(:+)
+        end
+      end
+
+      output
+    end
+
+    def pooling(layer, inputs)
+      output_size = layer.output_size
+      pool_size = layer.pool_size
+      stride = layer.stride || 1
+
+      # Calculate the number of columns in the output array
+      output_columns = inputs[0].length - pool_size
+      output_columns = output_columns <= 0 ? 1 : ((output_columns) / stride.to_f).ceil + 1
+
+      output = Array.new(output_size) { Array.new(output_columns) }
+
+      (0...output_size).each do |i|
+        (0...output_columns).each do |j|
+          start_idx = j * stride
+          end_idx = start_idx + pool_size - 1
+          next if inputs[i].nil? || inputs[i].length < end_idx + 1 # Add this check to avoid accessing an index that does not exist
+          pool_slice = inputs[i].slice(start_idx..end_idx)
+          output[i][j] = pool_slice.max
+        end
+      end
+
+      output
+    end
+
+    def conv_weight_delta(layer, gradients, inputs)
+      kernel_size = layer.kernel_size
+      stride = layer.stride
+
+      deltas = layer.weights.map do |row|
+        inputs.each_cons(kernel_size).map do |input_slice|
+          row.zip(input_slice).map { |a, b| a * b }.reduce(:+)
+        end
+      end
+
+      deltas
+    end
+
+    def pool_weight_delta(layer, gradients, inputs)
+      pool_size = layer.pool_size
+      stride = layer.stride
+
+      deltas = inputs.each_slice(stride).map do |input_slice|
+        input_slice.each_cons(pool_size).map do |pool_slice|
+          max_index = pool_slice.each_with_index.max[1]
+          pool_slice.map.with_index { |v, i| (i == max_index) ? v * gradients[i] : 0 }
+        end
+      end
+
+      deltas
     end
   end
 end
