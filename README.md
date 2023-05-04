@@ -10,6 +10,7 @@ Qoa is a simple and customizable neural network library for Ruby. It allows you 
 - Weight initialization using Xavier initialization
 - Customizable learning parameters
 - Parallelized backward pass for faster training
+- Supports convolutional and pooling layers
 
 ## Installation
 
@@ -34,7 +35,7 @@ require 'qoa'
 To create a new neural network, you can initialize an instance of `Qoa::NeuralNetwork` with the following parameters:
 
 - `input_nodes`: The number of input nodes.
-- `hidden_layers`: An array of the number of nodes in each hidden layer.
+- `hidden_layers`: An array of the number of nodes in each hidden layer, or an array of `[:conv, nodes, kernel_size, stride]` for a convolutional layer or `[:pool, nodes, pool_size, stride]` for a pooling layer.
 - `output_nodes`: The number of output nodes.
 - `learning_rate`: The learning rate for the gradient descent optimization.
 - `dropout_rate`: The dropout rate for regularization.
@@ -42,6 +43,8 @@ To create a new neural network, you can initialize an instance of `Qoa::NeuralNe
 - `decay_rate`: The decay rate for the RMSProp optimizer (default is `0.9`).
 - `epsilon`: A small value to prevent division by zero in the RMSProp optimizer (default is `1e-8`).
 - `batch_size`: The size of the mini-batches used for training (default is `10`).
+- `l1_lambda`: The L1 regularization parameter (default is `0.0`).
+- `l2_lambda`: The L2 regularization parameter (default is `0.0`).
 
 Example:
 
@@ -49,7 +52,7 @@ Example:
 require 'qoa'
 
 input_nodes = 784 # Number of input features (e.g., 28x28 pixels for MNIST dataset)
-hidden_layers = [128, 64] # Two hidden layers with 128 and 64 nodes each
+hidden_layers = [128, [:conv, 64, 3, 1]] # One hidden layer with 128 nodes and one convolutional layer with 64 nodes, kernel size 3, and stride 1
 output_nodes = 10 # Number of output classes (e.g., 10 for MNIST dataset)
 learning_rate = 0.01
 dropout_rate = 0.5
